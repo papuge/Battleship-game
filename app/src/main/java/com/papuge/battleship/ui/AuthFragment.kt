@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -32,12 +33,6 @@ class AuthFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_auth, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -46,6 +41,11 @@ class AuthFragment : Fragment() {
         googleSignInClient = GoogleSignIn.getClient(context!!, gso)
 
         auth = FirebaseAuth.getInstance()
+        return inflater.inflate(R.layout.fragment_auth, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         signInBtn = view.findViewById(R.id.btn_sign_in)
         signInBtn.setOnClickListener {
@@ -55,7 +55,7 @@ class AuthFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-
+        goToOptionsFragment()
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -66,6 +66,7 @@ class AuthFragment : Fragment() {
             try {
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account!!)
+                Log.w(TAG, "Login successful, go to opt fragment")
 
             } catch (e: ApiException) {
                 Log.w(TAG, "Google sign in failed", e)
@@ -81,7 +82,7 @@ class AuthFragment : Fragment() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d(TAG, "signInWithCredential:success")
-                    val user = auth.currentUser
+                    goToOptionsFragment()
                 } else {
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
                 }
@@ -91,6 +92,16 @@ class AuthFragment : Fragment() {
     private fun signIn() {
         val signInIntent =  googleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    private fun goToOptionsFragment() {
+        val user = auth.currentUser
+        Log.w(TAG, "User is $user")
+        if (user != null) {
+            val direction =
+                AuthFragmentDirections.actionAuthFragmentToOptionsFragment(userId = user.providerId)
+            findNavController().navigate(direction)
+        }
     }
 
     companion object {

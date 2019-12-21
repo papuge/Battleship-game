@@ -10,8 +10,8 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_start_new_game"
-        android:layout_marginTop="116dp"
         style="@style/GameButton"
+        android:layout_marginTop="44dp"
         android:text="@string/new_game"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,5 +25,36 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_start_new_game" />
+
+    <TextView
+        android:id="@+id/tv_game_stat"
+        android:layout_width="250dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:text="@string/view_games_statistics"
+        android:textColor="@color/colorWhite"
+        android:textSize="23sp"
+        android:textStyle="bold"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_join_game" />
+
+    <TextView
+        android:id="@+id/tv_sign_out"
+        android:layout_width="250dp"
+        android:layout_height="45dp"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"
+        android:text="@string/sign_out"
+        android:textColor="@color/colorWhite"
+        android:textSize="20sp"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
