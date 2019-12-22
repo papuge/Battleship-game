@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -23,6 +24,8 @@ class OptionsFragment : Fragment() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private lateinit var signOutTv: TextView
+    private lateinit var startNewGame: Button
+    private lateinit var joinGame: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +47,20 @@ class OptionsFragment : Fragment() {
         signOutTv = view.findViewById(R.id.tv_sign_out)
         signOutTv.setOnClickListener {
             signOut()
+        }
+
+        startNewGame = view.findViewById(R.id.btn_start_new_game)
+        startNewGame.setOnClickListener {
+            val direction = OptionsFragmentDirections
+                .actionOptionsFragmentToCreateGameFragment()
+            findNavController().navigate(direction)
+        }
+
+        joinGame = view.findViewById(R.id.btn_join_game)
+        joinGame.setOnClickListener {
+            val direction = OptionsFragmentDirections
+                .actionOptionsFragmentToJoinGameFragment()
+            findNavController().navigate(direction)
         }
     }
 

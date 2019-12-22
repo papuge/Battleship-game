@@ -8,4 +8,6 @@
     <string name="game_id">Game ID</string>
     <string name="view_games_statistics">Games statistics</string>
     <string name="sign_out">Sign out</string>
+    <string name="arrow_right">→</string>
+    <string name="arrow_down">↓</string>
 </resources>

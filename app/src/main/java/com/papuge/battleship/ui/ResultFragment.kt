@@ -9,9 +9,7 @@ import android.view.ViewGroup
 
 import com.papuge.battleship.R
 
-/**
- * A simple [Fragment] subclass.
- */
+
 class ResultFragment : Fragment() {
 
     override fun onCreateView(
