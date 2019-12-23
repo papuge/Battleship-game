@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "488668584763-3lcasm4mugfrv9lhmeea4tv6t1po5fi5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.papuge.battleship",
+            "certificate_hash": "6d776ccdbea29b3539d3317eec2c4012fbab31cf"
+          }
+        },
+        {
           "client_id": "488668584763-5flhvj0fhu33rhl175h9r9mrt39au8kd.apps.googleusercontent.com",
           "client_type": 3
         }
