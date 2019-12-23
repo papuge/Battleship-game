@@ -10,6 +10,8 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.papuge.battleship.game.Cell
+import com.papuge.battleship.game.CellState
 import com.papuge.battleship.game.Orientation
 
 
@@ -26,6 +28,8 @@ class BattleField: View {
     private var withShips: Boolean = false
 
     var shipRects = mutableListOf<RectF>()
+
+    var cells = Array(10) { Array(10) {Cell(0, 0)} }
 
     var cellWidth: Float = 0.0f
     var cellHeight: Float = 0.0f
@@ -68,6 +72,7 @@ class BattleField: View {
         if (withShips) {
             drawShips(canvas)
         }
+        drawCells(canvas)
     }
 
 
@@ -84,13 +89,6 @@ class BattleField: View {
         for (i in 0..gSize) {
             canvas.drawLine(0f, i * cellHeight, width.toFloat(), i * cellHeight, gridPaint)
         }
-    }
-
-    fun drawOne(canvas: Canvas) {
-        cellWidth = width.toFloat() / gSize
-        cellHeight = height.toFloat() / gSize
-        canvas.drawCircle(1.5f * cellWidth, 0.5f * cellHeight, 0.3f * cellWidth, hitPaint)
-        canvas.drawRect(0.25f * cellWidth, 0.25f * cellHeight, 0.75f * cellWidth, 0.75f * cellHeight, shipPaint)
     }
 
     fun addShip(i: Int, j: Int, orientation: Orientation, rank: Int) {
@@ -116,7 +114,22 @@ class BattleField: View {
         }
     }
 
-    private fun drawCross(canvas: Canvas, i: Int, j: Int) {
+    private fun drawCells(canvas: Canvas) {
+        cellWidth = width.toFloat() / gSize
+        cellHeight = height.toFloat() / gSize
+        for(i in 1 until 10) {
+            for (j in 1 until 10) {
+                if(cells[i][j].state == CellState.MISS) {
+                    drawMiss(canvas, i, j)
+                }
+                else if(cells[i][j].state == CellState.HIT) {
+                    drawHit(canvas, i, j)
+                }
+            }
+        }
+    }
+
+    private fun drawMiss(canvas: Canvas, i: Int, j: Int) {
         canvas.drawLine((i + 0.2f) * cellWidth, (j + 0.2f) * cellHeight,
             (i + 0.8f) * cellWidth, (j + 0.8f) * cellHeight, missPaint)
 
@@ -124,10 +137,13 @@ class BattleField: View {
             (i + 0.2f) * cellWidth, (j + 0.8f) * cellHeight, missPaint)
     }
 
+    private fun drawHit(canvas: Canvas, i: Int, j: Int) {
+        canvas.drawCircle((i + 0.5f) * cellWidth, (j + 0.5f) * cellHeight, 0.3f * cellWidth, hitPaint)
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         return true
     }
 
-    private fun refreshCanvas() = invalidate()
-
+    fun refreshCanvas() = invalidate()
 }

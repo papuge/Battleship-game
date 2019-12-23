@@ -127,14 +127,14 @@ class AllocateFragment : Fragment() {
                 return false
             }
             for (x in i until i + rank) {
-                if(viewModel.cells[x][j].isShip) {
+                if(viewModel.myGridCells[x][j].isShip) {
                     return false
                 }
             }
             var newShip = Ship(shipRank, orientation)
             for (x in i until i + rank) {
-                viewModel.cells[x][j].isShip = true
-                newShip.cells.add(viewModel.cells[x][j])
+                viewModel.myGridCells[x][j].isShip = true
+                newShip.cells.add(viewModel.myGridCells[x][j])
             }
             viewModel.ships.add(newShip)
         } else {
@@ -142,14 +142,14 @@ class AllocateFragment : Fragment() {
                 return false
             }
             for (y in j until j + rank) {
-                if(viewModel.cells[i][y].isShip) {
+                if(viewModel.myGridCells[i][y].isShip) {
                     return false
                 }
             }
             var newShip = Ship(shipRank, orientation)
             for (y in j until j + rank) {
-                viewModel.cells[i][y].isShip = true
-                newShip.cells.add(viewModel.cells[i][y])
+                viewModel.myGridCells[i][y].isShip = true
+                newShip.cells.add(viewModel.myGridCells[i][y])
             }
             viewModel.ships.add(newShip)
         }
