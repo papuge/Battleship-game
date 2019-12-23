@@ -1,23 +1,128 @@
 package com.papuge.battleship.ui
 
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.button.MaterialButtonToggleGroup
+import com.papuge.battleship.BattleField
 
 import com.papuge.battleship.R
+import com.papuge.battleship.game.Orientation
+import com.papuge.battleship.viewModels.GameViewModel
 
 
 class AllocateFragment : Fragment() {
+
+    var orientation: Orientation = Orientation.HORIZONTAL
+    lateinit var allocField: BattleField
+    lateinit var toggleGroup: MaterialButtonToggleGroup
+    lateinit var shipRankText: TextView
+
+    lateinit var viewModel: GameViewModel
+
+    var shipRank = 5
+    var shipAmount = 5 - shipRank + 1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        viewModel = activity?.run {
+            ViewModelProvider(this)[GameViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
         return inflater.inflate(R.layout.fragment_allocate, container, false)
     }
 
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        allocField = view.findViewById(R.id.alloc_field)
+        toggleGroup = view.findViewById(R.id.orientation_toggle_group)
+        shipRankText = view.findViewById(R.id.tv_ship_size)
+
+        allocField.setOnTouchListener { v, event ->
+            when (event?.action) {
+                MotionEvent.ACTION_UP -> {
+                    if (shipAmount == 0 && shipRank == 1) {
+                        Toast.makeText(activity,"No more ships", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val xTouch = event.x
+                        val yTouch = event.y
+                        val i = (xTouch / allocField.cellWidth).toInt()
+                        val j = (yTouch / allocField.cellHeight).toInt()
+                        if (checkShipLocation(i, j, orientation, shipRank)) {
+                            allocField.addShip(i, j, orientation, shipRank)
+                            shipAmount -= 1
+                            if (shipAmount == 0 && shipRank == 1) {
+                                Toast.makeText(activity,"No more ships", Toast.LENGTH_SHORT).show()
+                                shipRankText.text = getString(R.string.ships_are_set)
+                            }
+                            else if(shipAmount == 0) {
+                                shipRank -= 1
+                                shipAmount  = 5 - shipRank + 1
+                                shipRankText.text = "Place $shipAmount ships of rank $shipRank"
+                            }
+                        } else {
+                            Toast.makeText(activity,"Can't locate ship here", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            v?.onTouchEvent(event) ?: true
+        }
+
+        toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            if(checkedId == R.id.btn_horizontal) {
+                orientation = Orientation.VERTICAL
+            }
+            else if (checkedId == R.id.btn_vertical) {
+                orientation = Orientation.HORIZONTAL
+            }
+        }
+    }
+
+    private fun checkShipLocation(i: Int, j: Int, orientation: Orientation, rank: Int): Boolean {
+
+        if(shipAmount == 6) {
+            Toast.makeText(activity, "No more ships", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if(orientation == Orientation.HORIZONTAL) {
+            if (i + rank - 1 > 9) {
+                return false
+            }
+            for (x in i until i + rank) {
+                if(viewModel.cells[x][j].isShip) {
+                    return false
+                }
+            }
+            for (x in i until i + rank) {
+                viewModel.cells[x][j].isShip = true
+            }
+        } else {
+            if (j + rank - 1 > 9) {
+                return false
+            }
+            for (y in j until j + rank) {
+                if(viewModel.cells[i][y].isShip) {
+                    return false
+                }
+            }
+            for (y in j until j + rank) {
+                viewModel.cells[i][y].isShip = true
+            }
+        }
+        return true
+    }
 
 }

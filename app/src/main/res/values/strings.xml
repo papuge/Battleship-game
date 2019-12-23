@@ -10,4 +10,6 @@
     <string name="sign_out">Sign out</string>
     <string name="arrow_right">→</string>
     <string name="arrow_down">↓</string>
+    <string name="place_one_5_rank_ship">Place one 5 rank ship</string>
+    <string name="ships_are_set">All ships are set</string>
 </resources>

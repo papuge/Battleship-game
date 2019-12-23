@@ -1,23 +1,34 @@
 package com.papuge.battleship
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.papuge.battleship.game.Orientation
 
 
 class BattleField: View {
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    @SuppressLint("Recycle")
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+        val a = context!!.obtainStyledAttributes(attrs, R.styleable.BattleField)
+
+        withShips = a.getBoolean(R.styleable.BattleField_withShips, false)
+    }
 
     private val gSize = 10   // grid dimension
+    private var withShips: Boolean = false
 
-    private var cellWidth: Float = 0.0f
-    private var cellHeight: Float = 0.0f
+    var shipRects = mutableListOf<RectF>()
+
+    var cellWidth: Float = 0.0f
+    var cellHeight: Float = 0.0f
 
     private val gridPaint = Paint()
     private val shipPaint = Paint()
@@ -54,8 +65,9 @@ class BattleField: View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawGrid(canvas)
-        drawOne(canvas)
-        drawCross(canvas, 2, 0)
+        if (withShips) {
+            drawShips(canvas)
+        }
     }
 
 
@@ -81,30 +93,41 @@ class BattleField: View {
         canvas.drawRect(0.25f * cellWidth, 0.25f * cellHeight, 0.75f * cellWidth, 0.75f * cellHeight, shipPaint)
     }
 
-    fun drawShip(canvas: Canvas, xTouch: Float, yTouch: Float, orientation: Int = 1, rank: Int) {
-        val i = (xTouch / cellWidth).toInt()
-        val j = (yTouch / cellHeight).toInt()
-        val left = (i + 1/4) * cellWidth
-        val top = (j + 1/4) * cellHeight
-        var right: Float
-        var bottom: Float
+    fun addShip(i: Int, j: Int, orientation: Orientation, rank: Int) {
+        val left = (i + 0.25f) * cellWidth
+        val top = (j + 0.25f) * cellHeight
+        val right: Float
+        val bottom: Float
 
-        if (orientation == 1) {  // horizontal
-            right = (i + rank + 3/4) * cellWidth
-            bottom = (j + 3/4) * cellHeight
+        if (orientation == Orientation.HORIZONTAL) {  // horizontal
+            right = (i + rank - 1 + 0.75f) * cellWidth
+            bottom = (j + 0.75f) * cellHeight
         } else {
-            right = (i + 3/4) * cellWidth
-            bottom = (j + rank + 3/4) * cellHeight
+            right = (i + 0.75f) * cellWidth
+            bottom = (j + rank - 1 + 0.75f) * cellHeight
         }
-
+        shipRects.add(RectF(left, top, right, bottom))
+        refreshCanvas()
     }
 
-    fun drawCross(canvas: Canvas, i: Int, j: Int) {
+    private fun drawShips(canvas: Canvas) {
+        for (rect in shipRects) {
+            canvas.drawRect(rect, shipPaint)
+        }
+    }
+
+    private fun drawCross(canvas: Canvas, i: Int, j: Int) {
         canvas.drawLine((i + 0.2f) * cellWidth, (j + 0.2f) * cellHeight,
             (i + 0.8f) * cellWidth, (j + 0.8f) * cellHeight, missPaint)
 
         canvas.drawLine((i + 0.8f) * cellWidth, (j + 0.2f) * cellHeight,
             (i + 0.2f) * cellWidth, (j + 0.8f) * cellHeight, missPaint)
     }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return true
+    }
+
+    private fun refreshCanvas() = invalidate()
 
 }
