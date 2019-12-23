@@ -7,15 +7,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.firebase.database.*
 import com.papuge.battleship.BattleField
 
 import com.papuge.battleship.R
 import com.papuge.battleship.game.Orientation
+import com.papuge.battleship.game.Ship
 import com.papuge.battleship.viewModels.GameViewModel
 
 
@@ -25,6 +30,10 @@ class AllocateFragment : Fragment() {
     lateinit var allocField: BattleField
     lateinit var toggleGroup: MaterialButtonToggleGroup
     lateinit var shipRankText: TextView
+    lateinit var startPlay: Button
+
+    private lateinit var db: FirebaseDatabase
+    private lateinit var gameRef: DatabaseReference
 
     lateinit var viewModel: GameViewModel
 
@@ -38,6 +47,10 @@ class AllocateFragment : Fragment() {
         viewModel = activity?.run {
             ViewModelProvider(this)[GameViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
+
+        db = FirebaseDatabase.getInstance()
+        gameRef = db.getReference("games/${viewModel.gameId}")
+
         return inflater.inflate(R.layout.fragment_allocate, container, false)
     }
 
@@ -48,6 +61,7 @@ class AllocateFragment : Fragment() {
         allocField = view.findViewById(R.id.alloc_field)
         toggleGroup = view.findViewById(R.id.orientation_toggle_group)
         shipRankText = view.findViewById(R.id.tv_ship_size)
+        startPlay = view.findViewById(R.id.btn_start_play)
 
         allocField.setOnTouchListener { v, event ->
             when (event?.action) {
@@ -65,6 +79,10 @@ class AllocateFragment : Fragment() {
                             if (shipAmount == 0 && shipRank == 1) {
                                 Toast.makeText(activity,"No more ships", Toast.LENGTH_SHORT).show()
                                 shipRankText.text = getString(R.string.ships_are_set)
+                                startPlay.visibility = VISIBLE
+                                viewModel.shipRects = allocField.shipRects
+                                val path = if(viewModel.playerNum == 1) "p1Ready" else "p2Ready"
+                                gameRef.child(path).setValue(true)
                             }
                             else if(shipAmount == 0) {
                                 shipRank -= 1
@@ -88,6 +106,13 @@ class AllocateFragment : Fragment() {
                 orientation = Orientation.HORIZONTAL
             }
         }
+
+        startPlay.setOnClickListener {
+            val direction = AllocateFragmentDirections.actionAllocateFragmentToGameFragment()
+            findNavController().navigate(direction)
+        }
+
+        subscribeForReadyUser()
     }
 
     private fun checkShipLocation(i: Int, j: Int, orientation: Orientation, rank: Int): Boolean {
@@ -106,9 +131,12 @@ class AllocateFragment : Fragment() {
                     return false
                 }
             }
+            var newShip = Ship(shipRank, orientation)
             for (x in i until i + rank) {
                 viewModel.cells[x][j].isShip = true
+                newShip.cells.add(viewModel.cells[x][j])
             }
+            viewModel.ships.add(newShip)
         } else {
             if (j + rank - 1 > 9) {
                 return false
@@ -118,11 +146,26 @@ class AllocateFragment : Fragment() {
                     return false
                 }
             }
+            var newShip = Ship(shipRank, orientation)
             for (y in j until j + rank) {
                 viewModel.cells[i][y].isShip = true
+                newShip.cells.add(viewModel.cells[i][y])
             }
+            viewModel.ships.add(newShip)
         }
         return true
+    }
+
+    private fun subscribeForReadyUser() {
+        val path = if (viewModel.playerNum == 1) "p2Ready" else "p2Ready"
+        gameRef.child(path).addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.value == true) {
+                    startPlay.isEnabled = true
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
     }
 
 }

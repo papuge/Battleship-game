@@ -8,14 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
 import com.google.firebase.auth.FirebaseAuth
 
 import com.papuge.battleship.R
+import com.papuge.battleship.viewModels.GameViewModel
 
 class OptionsFragment : Fragment() {
 
@@ -27,6 +28,8 @@ class OptionsFragment : Fragment() {
     private lateinit var startNewGame: Button
     private lateinit var joinGame: Button
 
+    lateinit var viewModel: GameViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,6 +40,10 @@ class OptionsFragment : Fragment() {
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(context!!, gso)
+
+        viewModel = activity?.run {
+            ViewModelProvider(this)[GameViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
 
         auth = FirebaseAuth.getInstance()
         return inflater.inflate(R.layout.fragment_options, container, false)
@@ -62,6 +69,11 @@ class OptionsFragment : Fragment() {
                 .actionOptionsFragmentToJoinGameFragment()
             findNavController().navigate(direction)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.clear()
     }
 
 

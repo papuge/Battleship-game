@@ -22,7 +22,8 @@
         tools:layout="@layout/fragment_create_game" >
         <action
             android:id="@+id/action_createGameFragment_to_allocateFragment"
-            app:destination="@id/allocateFragment" />
+            app:destination="@id/allocateFragment"
+            app:popUpTo="@+id/optionsFragment" />
     </fragment>
     <fragment
         android:id="@+id/joinGameFragment"
@@ -31,7 +32,8 @@
         tools:layout="@layout/fragment_join_game" >
         <action
             android:id="@+id/action_joinGameFragment_to_allocateFragment"
-            app:destination="@id/allocateFragment" />
+            app:destination="@id/allocateFragment"
+            app:popUpTo="@+id/optionsFragment" />
     </fragment>
     <fragment
         android:id="@+id/allocateFragment"
@@ -40,7 +42,8 @@
         tools:layout="@layout/fragment_allocate" >
         <action
             android:id="@+id/action_allocateFragment_to_gameFragment"
-            app:destination="@id/gameFragment" />
+            app:destination="@id/gameFragment"
+            app:popUpTo="@+id/optionsFragment" />
     </fragment>
     <fragment
         android:id="@+id/resultFragment"
@@ -71,9 +74,6 @@
         <action
             android:id="@+id/action_optionsFragment_to_joinGameFragment"
             app:destination="@id/joinGameFragment" />
-        <argument
-            android:name="userId"
-            app:argType="string" />
         <action
             android:id="@+id/action_optionsFragment_to_authFragment2"
             app:destination="@id/authFragment" />

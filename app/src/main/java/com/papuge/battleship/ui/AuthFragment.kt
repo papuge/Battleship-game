@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
 import com.papuge.battleship.R
+import com.papuge.battleship.viewModels.GameViewModel
 
 class AuthFragment : Fragment() {
 
@@ -29,6 +31,8 @@ class AuthFragment : Fragment() {
 
     private lateinit var signInBtn: SignInButton
 
+    private lateinit var viewModel: GameViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,6 +41,10 @@ class AuthFragment : Fragment() {
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
+
+        viewModel = activity?.run {
+            ViewModelProvider(this)[GameViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
 
         googleSignInClient = GoogleSignIn.getClient(context!!, gso)
 
@@ -98,8 +106,8 @@ class AuthFragment : Fragment() {
         val user = auth.currentUser
         Log.w(TAG, "User is $user")
         if (user != null) {
-            val direction =
-                AuthFragmentDirections.actionAuthFragmentToOptionsFragment(userId = user.providerId)
+            viewModel.userId = user.uid
+            val direction = AuthFragmentDirections.actionAuthFragmentToOptionsFragment()
             findNavController().navigate(direction)
         }
     }

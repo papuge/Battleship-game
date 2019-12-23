@@ -12,4 +12,7 @@
     <string name="arrow_down">↓</string>
     <string name="place_one_5_rank_ship">Place one 5 rank ship</string>
     <string name="ships_are_set">All ships are set</string>
+    <string name="start">Start</string>
+    <string name="_1st_player_move">1st player move</string>
+    <string name="back_to_menu">Back to menu</string>
 </resources>
