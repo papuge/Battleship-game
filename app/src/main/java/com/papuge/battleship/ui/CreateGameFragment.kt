@@ -14,8 +14,11 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
 import com.papuge.battleship.R
+import com.papuge.battleship.game.Answer
 import com.papuge.battleship.game.Game
+import com.papuge.battleship.game.Move
 import com.papuge.battleship.viewModels.GameViewModel
+import java.util.*
 import kotlin.random.Random
 
 
@@ -64,6 +67,8 @@ class CreateGameFragment : Fragment() {
         viewModel.gameId = gameId
         val game = Game(player1 = viewModel.userId)
         viewModel.game = game
+        db.getReference("moves").child("$gameId").setValue(Move())
+        db.getReference("answers").child("$gameId").setValue(Answer())
         gamesRef.child("$gameId").setValue(game)
     }
 

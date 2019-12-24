@@ -157,7 +157,7 @@ class AllocateFragment : Fragment() {
     }
 
     private fun subscribeForReadyUser() {
-        val path = if (viewModel.playerNum == 1) "p2Ready" else "p2Ready"
+        val path = if (viewModel.playerNum == 1) "p2Ready" else "p1Ready"
         gameRef.child(path).addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.value == true) {

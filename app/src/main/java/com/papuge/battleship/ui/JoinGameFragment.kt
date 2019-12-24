@@ -60,8 +60,7 @@ class JoinGameFragment : Fragment() {
                         gameRef.child("player2").setValue(viewModel.userId)
                         viewModel.playerNum = 2
                         viewModel.gameId = gameId
-                        val direction = JoinGameFragmentDirections
-                            .actionJoinGameFragmentToAllocateFragment()
+                        val direction = JoinGameFragmentDirections.actionJoinGameFragmentToAllocateFragment()
                         findNavController().navigate(direction)
 
                     } else {

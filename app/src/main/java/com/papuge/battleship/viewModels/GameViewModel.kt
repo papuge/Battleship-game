@@ -12,7 +12,7 @@ class GameViewModel: ViewModel() {
     var userId: String = ""
     var gameId: Int = -1
     var game: Game? = null
-    var moveNum: Int = 0
+    var moveNum: Int = 1
 
     var myGridCells: Array<Array<Cell>> = Array(10) { Array(10) {Cell(0, 0)} }
     var myMoveCells: Array<Array<Cell>> = Array(10) { Array(10) {Cell(0, 0)} }
@@ -27,6 +27,6 @@ class GameViewModel: ViewModel() {
         myMoveCells = Array(10) { Array(10) {Cell(0, 0)} }
         ships = mutableListOf()
         shipRects = mutableListOf()
-        moveNum = 0
+        moveNum = 1
     }
 }

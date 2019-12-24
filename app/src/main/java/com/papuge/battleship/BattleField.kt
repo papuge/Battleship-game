@@ -117,8 +117,8 @@ class BattleField: View {
     private fun drawCells(canvas: Canvas) {
         cellWidth = width.toFloat() / gSize
         cellHeight = height.toFloat() / gSize
-        for(i in 1 until 10) {
-            for (j in 1 until 10) {
+        for(i in 0 until 10) {
+            for (j in 0 until 10) {
                 if(cells[i][j].state == CellState.MISS) {
                     drawMiss(canvas, i, j)
                 }
