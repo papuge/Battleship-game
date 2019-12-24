@@ -10,8 +10,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.database.*
 import com.papuge.battleship.BattleField
 
@@ -26,17 +26,11 @@ class GameFragment : Fragment() {
 
     private lateinit var db: FirebaseDatabase
     private lateinit var gameRef: DatabaseReference
-    private lateinit var movesRef: DatabaseReference
-    private lateinit var ansRef: DatabaseReference
+    private lateinit var infoRef: DatabaseReference
 
     lateinit var moveNumText: TextView
     lateinit var myField: BattleField
     lateinit var userField: BattleField
-
-    lateinit var opponentAnsPath: String
-    lateinit var myAnsPath: String
-    lateinit var opponentMovePath: String
-    lateinit var myMovePath: String
 
 
     override fun onCreateView(
@@ -47,15 +41,11 @@ class GameFragment : Fragment() {
             ViewModelProvider(this)[GameViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
 
-        opponentAnsPath = if(viewModel.playerNum == 1) "p2a" else "p1a"
-        myAnsPath = if(viewModel.playerNum == 1) "p1a" else "p2a"
-        opponentMovePath = if(viewModel.playerNum == 1) "p2move" else "p1move"
-        myMovePath = if(viewModel.playerNum == 1) "p1move" else "p2move"
 
         db = FirebaseDatabase.getInstance()
         gameRef = db.getReference("games/${viewModel.gameId}")
-        movesRef = db.getReference("moves/${viewModel.gameId}")
-        ansRef = db.getReference("answers/${viewModel.gameId}")
+        infoRef = db.getReference("cells/${viewModel.gameId}")
+
 
         return inflater.inflate(R.layout.fragment_game, container, false)
     }
@@ -69,8 +59,29 @@ class GameFragment : Fragment() {
         userField = view.findViewById(R.id.user_field)
 
         myField.shipRects = viewModel.shipRects
-        myField.cells = viewModel.myGridCells
-        userField.cells = viewModel.myMoveCells
+        myField.cells = viewModel.myCells
+        userField.cells = viewModel.oppCells
+
+
+        val oppFieldPath = if (viewModel.playerNum == 1) "p2" else "p1"
+
+        infoRef.child(oppFieldPath).addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) { }
+
+            override fun onDataChange(snap: DataSnapshot) {
+                Log.d(TAG, "${snap.childrenCount}")
+                for (cell in snap.children) {
+                    var i = cell.child("first").getValue(Int::class.java)
+                    var j = cell.child("second").getValue(Int::class.java)
+
+                    if (i == null || j == null) {
+                        i = 0
+                        j = 0
+                    }
+                    viewModel.oppCells[i][j].isShip = true
+                }
+            }
+        })
 
         userField.setOnTouchListener { v, event ->
             when (event?.action) {
@@ -79,121 +90,104 @@ class GameFragment : Fragment() {
                     val yTouch = event.y
                     val i = (xTouch / userField.cellWidth).toInt()
                     val j = (yTouch / userField.cellHeight).toInt()
-                    if (viewModel.moveNum != viewModel.playerNum) {
-                        touchHandler(i, j)
+                    if (viewModel.moveNum == viewModel.playerNum) {
+                        makeMove(i, j)
                     }
                 }
             }
             v?.onTouchEvent(event) ?: true
         }
 
-        subscribeOnOpponentMove()
-        subscribeMoveChange()
-    }
-
-    private fun subscribeMoveChange() {
         gameRef.child("move").addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val num = snapshot.getValue(Int::class.java) ?: return
-                viewModel.moveNum = num
-                moveNumText.text = getString(R.string.players_move, num.toString())
-            }
-
-            override fun onCancelled(p0: DatabaseError) {}
-
-        })
-    }
-
-    private fun subscribeOnOpponentMove() {
-        movesRef.child(opponentMovePath).addValueEventListener(object: ValueEventListener {
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-                var i = snapshot.child("first").getValue(Int::class.java)
-                var j = snapshot.child("second").getValue(Int::class.java)
-
-                if(i == null || j == null) {
-                    i = 0
-                    j = 0
-                }
-
-                if(i == -1 || j == -1) {
-                    return
-                }
-
-                Log.d(TAG, "Init i j globals - $i, $j")
-
-                val cell = viewModel.myGridCells[i][j]
-                if(cell.state != CellState.EMPTY) {
-                    ansRef.child(myAnsPath).setValue("not empty")
-                }
-                else if(cell.isShip) {
-                    ansRef.child(myAnsPath).setValue("hit")
-                    viewModel.myGridCells[i][j].state = CellState.HIT
-                    myField.cells[i][j].state = CellState.HIT
-                    myField.refreshCanvas()
-                }
-                else if(!cell.isShip) {
-                    ansRef.child(myAnsPath).setValue("miss")
-                    viewModel.myGridCells[i][j].state = CellState.MISS
-                    myField.cells[i][j].state = CellState.MISS
-                    myField.refreshCanvas()
-                }
-            }
-
-            override fun onCancelled(p0: DatabaseError) {}
-
-        })
-    }
-
-    private fun touchHandler(i: Int, j: Int) {
-        makeNewMove(i, j)
-        ansRef.child(opponentAnsPath).addValueEventListener(object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(i == -1 || j == -1) {
-                    return
-                }
-                Log.d(TAG, "Assign $i, $j")
-                val status = snapshot.getValue(String::class.java)
-                Log.d(TAG, "Status $status")
-                when(status) {
-                    "not empty" -> return
-                    "hit" -> {
-                        viewModel.myMoveCells[i][j].state = CellState.HIT
-                        userField.cells[i][j].state = CellState.HIT
-                        userField.refreshCanvas()
+                if (num != 0) {
+                    viewModel.moveNum = num
+                    moveNumText.text = getString(R.string.players_move, num.toString())
+                } else {
+                    if(viewModel.winnerNum == viewModel.playerNum) {
                         return
                     }
-                    "kill" -> {}
-                    "miss" -> {
-                        viewModel.myMoveCells[i][j].state = CellState.MISS
-                        val newMove = if(viewModel.playerNum == 1) 2 else 1
-                        gameRef.child("move").setValue(newMove)
-                        userField.cells[i][j].state = CellState.MISS
-                        userField.refreshCanvas()
-                        return
-                    }
+                    var oldAllValue = 0
+                    val userRef = db.getReference("users/${viewModel.userId}")
+                    userRef.child("all").addListenerForSingleValueEvent(object: ValueEventListener{
+                        override fun onCancelled(p0: DatabaseError) {}
+
+                        override fun onDataChange(p0: DataSnapshot) {
+                            oldAllValue = p0.getValue(Int::class.java) ?: 0
+                        }
+
+                    })
+                    userRef.child("all").setValue(oldAllValue + 1)
+                    navigateToRes()
                 }
             }
 
             override fun onCancelled(p0: DatabaseError) {}
+
         })
-        subscribeMoveChange()
+
+        Log.d(TAG, "Init ended")
     }
 
-    private fun makeNewMove(i: Int, j: Int) {
-        movesRef.runTransaction(object : Transaction.Handler {
-            override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                movesRef.child(myMovePath).child("first").setValue(i)
-                movesRef.child(myMovePath).child("second").setValue(j)
-                return Transaction.success(mutableData)
-            }
+    private fun makeMove(i: Int, j: Int) {
+        if(viewModel.oppCells[i][j].state != CellState.EMPTY) {
+            return
+        }
+        if(viewModel.oppCells[i][j].isShip) {
+            viewModel.oppCells[i][j].state = CellState.HIT
+            userField.cells[i][j].state = CellState.HIT
+            userField.refreshCanvas()
+            if (allCellsDefeated()) {
+                viewModel.winnerNum = viewModel.playerNum
+                gameRef.child("move").setValue(0)
+                var oldAllValue = 0
+                var oldWinsValue = 0
+                val userRef = db.getReference("users/${viewModel.userId}")
+                userRef.child("all").addListenerForSingleValueEvent(object: ValueEventListener{
+                    override fun onCancelled(p0: DatabaseError) {}
 
-            override fun onComplete(
-                databaseError: DatabaseError?,
-                b: Boolean,
-                dataSnapshot: DataSnapshot?
-            ) {}
-        })
+                    override fun onDataChange(p0: DataSnapshot) {
+                        oldAllValue = p0.getValue(Int::class.java) ?: 0
+                    }
+
+                })
+                userRef.child("wins").addListenerForSingleValueEvent(object: ValueEventListener{
+                    override fun onCancelled(p0: DatabaseError) {}
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        oldWinsValue = p0.getValue(Int::class.java) ?: 0
+                    }
+
+                })
+                userRef.child("all").setValue(oldAllValue + 1)
+                userRef.child("wins").setValue(oldWinsValue + 1)
+                navigateToRes()
+            }
+        } else {
+            viewModel.oppCells[i][j].state = CellState.MISS
+            userField.cells[i][j].state = CellState.MISS
+            userField.refreshCanvas()
+            val newMove = if(viewModel.moveNum == 1) 2 else 1
+            gameRef.child("move").setValue(newMove)
+        }
+    }
+
+    private fun allCellsDefeated(): Boolean {
+        for(i in 0..9){
+            for(j in 0..9) {
+                if(viewModel.oppCells[i][j].isShip &&
+                    viewModel.oppCells[i][j].state == CellState.EMPTY) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    private fun navigateToRes() {
+        val direction = GameFragmentDirections.actionGameFragmentToResultFragment()
+        findNavController().navigate(direction)
     }
 
     companion object {

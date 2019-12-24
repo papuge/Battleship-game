@@ -29,7 +29,7 @@ class BattleField: View {
 
     var shipRects = mutableListOf<RectF>()
 
-    var cells = Array(10) { Array(10) {Cell(0, 0)} }
+    var cells = Array(10) { Array(10) {Cell()} }
 
     var cellWidth: Float = 0.0f
     var cellHeight: Float = 0.0f
@@ -115,8 +115,6 @@ class BattleField: View {
     }
 
     private fun drawCells(canvas: Canvas) {
-        cellWidth = width.toFloat() / gSize
-        cellHeight = height.toFloat() / gSize
         for(i in 0 until 10) {
             for (j in 0 until 10) {
                 if(cells[i][j].state == CellState.MISS) {
@@ -130,6 +128,8 @@ class BattleField: View {
     }
 
     private fun drawMiss(canvas: Canvas, i: Int, j: Int) {
+        cellWidth = width.toFloat() / gSize
+        cellHeight = height.toFloat() / gSize
         canvas.drawLine((i + 0.2f) * cellWidth, (j + 0.2f) * cellHeight,
             (i + 0.8f) * cellWidth, (j + 0.8f) * cellHeight, missPaint)
 
@@ -138,6 +138,8 @@ class BattleField: View {
     }
 
     private fun drawHit(canvas: Canvas, i: Int, j: Int) {
+        cellWidth = width.toFloat() / gSize
+        cellHeight = height.toFloat() / gSize
         canvas.drawCircle((i + 0.5f) * cellWidth, (j + 0.5f) * cellHeight, 0.3f * cellWidth, hitPaint)
     }
 

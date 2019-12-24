@@ -34,6 +34,7 @@ class AllocateFragment : Fragment() {
 
     private lateinit var db: FirebaseDatabase
     private lateinit var gameRef: DatabaseReference
+    private lateinit var infoRef: DatabaseReference
 
     lateinit var viewModel: GameViewModel
 
@@ -50,6 +51,7 @@ class AllocateFragment : Fragment() {
 
         db = FirebaseDatabase.getInstance()
         gameRef = db.getReference("games/${viewModel.gameId}")
+        infoRef = db.getReference("cells/${viewModel.gameId}")
 
         return inflater.inflate(R.layout.fragment_allocate, container, false)
     }
@@ -78,6 +80,18 @@ class AllocateFragment : Fragment() {
                             shipAmount -= 1
                             if (shipAmount == 0 && shipRank == 1) {
                                 Toast.makeText(activity,"No more ships", Toast.LENGTH_SHORT).show()
+
+                                val myFieldPath = if (viewModel.playerNum == 1) "p1" else "p2"
+                                var cellsCoord = mutableListOf<Pair<Int, Int>>()
+                                for (i in 0..9) {
+                                    for (j in 0..9) {
+                                        if(viewModel.myCells[i][j].isShip) {
+                                            cellsCoord.add(Pair(i, j))
+                                        }
+                                    }
+                                }
+                                infoRef.child(myFieldPath).setValue(cellsCoord)
+
                                 shipRankText.text = getString(R.string.ships_are_set)
                                 startPlay.visibility = VISIBLE
                                 viewModel.shipRects = allocField.shipRects
@@ -127,31 +141,39 @@ class AllocateFragment : Fragment() {
                 return false
             }
             for (x in i until i + rank) {
-                if(viewModel.myGridCells[x][j].isShip) {
+                if(viewModel.myCells[x][j].isShip) {
                     return false
                 }
             }
-            var newShip = Ship(shipRank, orientation)
+            var newShip = Ship()
+            newShip.rank = shipRank
+            newShip.orientation = orientation
             for (x in i until i + rank) {
-                viewModel.myGridCells[x][j].isShip = true
-                newShip.cells.add(viewModel.myGridCells[x][j])
+                viewModel.myCells[x][j].isShip = true
+                viewModel.myCells[x][j].x = x
+                viewModel.myCells[x][j].y = j
+                newShip.cells.add(viewModel.myCells[x][j])
             }
-            viewModel.ships.add(newShip)
+            viewModel.myShips.add(newShip)
         } else {
             if (j + rank - 1 > 9) {
                 return false
             }
             for (y in j until j + rank) {
-                if(viewModel.myGridCells[i][y].isShip) {
+                if(viewModel.myCells[i][y].isShip) {
                     return false
                 }
             }
-            var newShip = Ship(shipRank, orientation)
+            var newShip = Ship()
+            newShip.rank = shipRank
+            newShip.orientation = orientation
             for (y in j until j + rank) {
-                viewModel.myGridCells[i][y].isShip = true
-                newShip.cells.add(viewModel.myGridCells[i][y])
+                viewModel.myCells[i][y].isShip = true
+                viewModel.myCells[i][y].x = i
+                viewModel.myCells[i][y].y = y
+                newShip.cells.add(viewModel.myCells[i][y])
             }
-            viewModel.ships.add(newShip)
+            viewModel.myShips.add(newShip)
         }
         return true
     }

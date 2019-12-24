@@ -19,6 +19,8 @@ import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 import com.papuge.battleship.R
 import com.papuge.battleship.viewModels.GameViewModel
@@ -32,6 +34,9 @@ class AuthFragment : Fragment() {
     private lateinit var signInBtn: SignInButton
 
     private lateinit var viewModel: GameViewModel
+
+    private lateinit var db: FirebaseDatabase
+    private lateinit var usersRef: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,6 +52,9 @@ class AuthFragment : Fragment() {
         } ?: throw Exception("Invalid Activity")
 
         googleSignInClient = GoogleSignIn.getClient(context!!, gso)
+
+        db = FirebaseDatabase.getInstance()
+        usersRef = db.getReference("users")
 
         auth = FirebaseAuth.getInstance()
         return inflater.inflate(R.layout.fragment_auth, container, false)
@@ -74,6 +82,8 @@ class AuthFragment : Fragment() {
             try {
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account!!)
+                usersRef.child(viewModel.userId).child("all").setValue(0)
+                usersRef.child(viewModel.userId).child("wins").setValue(0)
                 Log.w(TAG, "Login successful, go to opt fragment")
 
             } catch (e: ApiException) {

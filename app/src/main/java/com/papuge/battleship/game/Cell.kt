@@ -1,8 +1,9 @@
 package com.papuge.battleship.game
 
-data class Cell(
-    val x: Int,
-    val y: Int,
-    var state: CellState = CellState.EMPTY,
+class Cell {
+    var x: Int = 0
+    var y: Int = 0
+    var state: CellState = CellState.EMPTY
     var isShip: Boolean = false
-)
+}
+
