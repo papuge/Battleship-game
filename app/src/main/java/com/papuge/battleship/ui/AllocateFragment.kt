@@ -137,14 +137,61 @@ class AllocateFragment : Fragment() {
         }
 
         if(orientation == Orientation.HORIZONTAL) {
+
+            // check if ship fit in field
             if (i + rank - 1 > 9) {
                 return false
             }
+
+            // check surroundings
             for (x in i until i + rank) {
                 if(viewModel.myCells[x][j].isShip) {
                     return false
                 }
+                if (j - 1 >= 0) {
+                    if(viewModel.myCells[x][j - 1].isShip) {
+                        return false
+                    }
+                }
+                if(j + 1 < 10) {
+                    if(viewModel.myCells[x][j + 1].isShip) {
+                        return false
+                    }
+                }
             }
+            if (i - 1 >= 0) {
+                if(viewModel.myCells[i - 1][j].isShip) {
+                    return false
+                }
+                if(j - 1 >= 0) {
+                    if(viewModel.myCells[i - 1][j - 1].isShip) {
+                        return false
+                    }
+                }
+                if(j + 1 < 10) {
+                    if(viewModel.myCells[i - 1][j + 1].isShip) {
+                        return false
+                    }
+                }
+            }
+            // x_len + 1
+            if (i + rank < 10) {
+                if(viewModel.myCells[i + rank][j].isShip) {
+                    return false
+                }
+                if(j - 1 >= 0) {
+                    if(viewModel.myCells[i + rank][j - 1].isShip) {
+                        return false
+                    }
+                }
+                if(j + 1 < 10) {
+                    if(viewModel.myCells[i + rank][j + 1].isShip) {
+                        return false
+                    }
+                }
+            }
+
+            // placing ship
             var newShip = Ship()
             newShip.rank = shipRank
             newShip.orientation = orientation
@@ -156,14 +203,59 @@ class AllocateFragment : Fragment() {
             }
             viewModel.myShips.add(newShip)
         } else {
+            // vertical align
             if (j + rank - 1 > 9) {
                 return false
             }
+
             for (y in j until j + rank) {
                 if(viewModel.myCells[i][y].isShip) {
                     return false
                 }
+                if (i - 1 >= 0) {
+                    if(viewModel.myCells[i - 1][y].isShip) {
+                        return false
+                    }
+                }
+                if(i + 1 < 10) {
+                    if(viewModel.myCells[i + 1][y].isShip) {
+                        return false
+                    }
+                }
             }
+
+            if (j - 1 >= 0) {
+                if(viewModel.myCells[i][j - 1].isShip) {
+                    return false
+                }
+                if(i - 1 >= 0) {
+                    if(viewModel.myCells[i - 1][j - 1].isShip) {
+                        return false
+                    }
+                }
+                if(i + 1 < 10) {
+                    if(viewModel.myCells[i + 1][j - 1].isShip) {
+                        return false
+                    }
+                }
+            }
+
+            if (j + rank < 10) {
+                if(viewModel.myCells[i][j + rank].isShip) {
+                    return false
+                }
+                if(i - 1 >= 0) {
+                    if(viewModel.myCells[i - 1][j + rank].isShip) {
+                        return false
+                    }
+                }
+                if(i + 1 < 9) {
+                    if(viewModel.myCells[i + 1][j + rank].isShip) {
+                        return false
+                    }
+                }
+            }
+
             var newShip = Ship()
             newShip.rank = shipRank
             newShip.orientation = orientation
