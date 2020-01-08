@@ -32,6 +32,8 @@ class GameFragment : Fragment() {
     lateinit var myField: BattleField
     lateinit var userField: BattleField
 
+    private var isInit: Boolean = true
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -132,6 +134,26 @@ class GameFragment : Fragment() {
 
         })
 
+        val opp = if(viewModel.playerNum == 1) "2" else "1"
+        gameRef.child("oppMove").addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val i = snapshot.child("$opp/first").getValue(Int::class.java) ?: 0
+                val j = snapshot.child("$opp/second").getValue(Int::class.java) ?: 0
+                if(!isInit) {
+                    if (viewModel.myCells[i][j].isShip) {
+                        myField.cells[i][j].state = CellState.HIT
+                    } else {
+                        myField.cells[i][j].state = CellState.MISS
+                    }
+                    myField.refreshCanvas()
+                } else {
+                    isInit = false
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {}
+        })
+
         Log.d(TAG, "Init ended")
     }
 
@@ -139,6 +161,10 @@ class GameFragment : Fragment() {
         if(viewModel.oppCells[i][j].state != CellState.EMPTY) {
             return
         }
+
+        val playerNum = if(viewModel.playerNum == 1) "oppMove/1" else "oppMove/2"
+        gameRef.child(playerNum).setValue(Pair(i, j))
+
         if(viewModel.oppCells[i][j].isShip) {
             viewModel.oppCells[i][j].state = CellState.HIT
             userField.cells[i][j].state = CellState.HIT
