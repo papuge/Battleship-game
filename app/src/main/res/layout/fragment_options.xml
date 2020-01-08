@@ -35,7 +35,6 @@
         android:text="@string/view_games_statistics"
         android:textColor="@color/colorWhite"
         android:textSize="23sp"
-        android:visibility="invisible"
         android:textStyle="bold"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"

@@ -25,6 +25,7 @@ class OptionsFragment : Fragment() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private lateinit var signOutTv: TextView
+    private lateinit var statsTv: TextView
     private lateinit var startNewGame: Button
     private lateinit var joinGame: Button
 
@@ -54,6 +55,13 @@ class OptionsFragment : Fragment() {
         signOutTv = view.findViewById(R.id.tv_sign_out)
         signOutTv.setOnClickListener {
             signOut()
+        }
+
+        statsTv = view.findViewById(R.id.tv_game_stat)
+        statsTv.setOnClickListener {
+            val direction = OptionsFragmentDirections
+                .actionOptionsFragmentToStatsFragment()
+            findNavController().navigate(direction)
         }
 
         startNewGame = view.findViewById(R.id.btn_start_new_game)

@@ -14,5 +14,9 @@
     <string name="ships_are_set">All ships are set</string>
     <string name="start">Start</string>
     <string name="players_move">%s player\'s move</string>
+    <string name="stats_wins">%s wins</string>
+    <string name="stats_total">%s games played</string>
     <string name="back_to_menu">Back to menu</string>
+    <string name="your_move">Your move now</string>
+    <string name="opp_move">Opponent\'s move</string>
 </resources>

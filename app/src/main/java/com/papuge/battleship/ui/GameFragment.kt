@@ -103,7 +103,12 @@ class GameFragment : Fragment() {
                 val num = snapshot.getValue(Int::class.java) ?: return
                 if (num != 0) {
                     viewModel.moveNum = num
-                    moveNumText.text = getString(R.string.players_move, num.toString())
+                    if(viewModel.moveNum == viewModel.playerNum) {
+                        moveNumText.text = getString(R.string.your_move)
+                    } else {
+                        moveNumText.text = getString(R.string.opp_move)
+                    }
+
                 } else {
                     if(viewModel.winnerNum == viewModel.playerNum) {
                         return
